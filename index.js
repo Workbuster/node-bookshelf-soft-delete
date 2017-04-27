@@ -59,7 +59,9 @@ module.exports = function (Bookshelf) {
       return mProto.fetch.apply(this, arguments);
     },
 
-    restore: function () {
+    restore: function (opts) {
+      opts = opts || {};
+
       if (this.softActivated) {
         if (this.get(this.softFields[0])) {
           if (this.softFields[1]) {
@@ -69,7 +71,7 @@ module.exports = function (Bookshelf) {
             // If restored_at does not exist, remove the deleted_at
             this.set(this.softFields[0], null);
           }
-          return this.save();
+          return this.save(null, { transacting: opts.transacting });
         }
       }
       else {
@@ -79,6 +81,8 @@ module.exports = function (Bookshelf) {
     },
 
     destroy: function (opts) {
+      opts = opts || {};
+
       if (this.softActivated && !shouldDisable(opts)) {
         var model = this;
         var softFields = model.softFields;
@@ -88,7 +92,7 @@ module.exports = function (Bookshelf) {
               model.set(softFields[1], null);
             }
             model.set(softFields[0], new Date());
-            return model.save();
+            return model.save(null, { transacting: opts.transacting });
           })
           .then(function () {
             return model.triggerThen('destroyed', model, undefined, opts);
