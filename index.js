@@ -71,7 +71,7 @@ module.exports = function (Bookshelf) {
             // If restored_at does not exist, remove the deleted_at
             this.set(this.softFields[0], null);
           }
-          return this.save(null, { transacting: opts.transacting });
+          return this.save(null, opts);
         }
       }
       else {
@@ -92,7 +92,7 @@ module.exports = function (Bookshelf) {
               model.set(softFields[1], null);
             }
             model.set(softFields[0], new Date());
-            return model.save(null, { transacting: opts.transacting });
+            return model.save(null, opts);
           })
           .then(function () {
             return model.triggerThen('destroyed', model, undefined, opts);
