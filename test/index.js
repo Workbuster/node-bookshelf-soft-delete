@@ -1036,4 +1036,40 @@ describe('bookshelf Model5 without restored at', function () {
       });
     });
   });
+
+
+  describe('A softDeleted model - transaction', function () {
+    var id;
+
+    before(function () {
+      var model = Model.forge();
+      return model
+        .save()
+        .then(function () {
+          id = model.id;
+        });
+    });
+
+    it('should not be visible in model fetch', function () {
+      return knex.transaction(function (trx) {
+        var opts = { transacting: trx };
+        return Model
+          .forge({ id: id })
+          .fetch(opts)
+          .then(function (model) {
+            return model.destroy(opts);
+          })
+          .then(function () {
+            return BPromise.all([
+              Model.forge({ id: id }).fetch(opts),
+              Model.forge({ id: id }).fetch()
+            ]);
+          })
+          .spread(function (model1, model2) {
+            should.not.exist(model1);
+            should.exist(model2);
+          });
+      });
+    });
+  });
 });
